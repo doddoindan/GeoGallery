@@ -1,7 +1,7 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010 Express for Windows Phone
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalleryEdit", "WindowsPhoneApplication10\GalleryEdit.csproj", "{2C973A98-8358-4917-A545-EBE9FB1AA4A3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalleryEdit", "Geogallery\GalleryEdit.csproj", "{2C973A98-8358-4917-A545-EBE9FB1AA4A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
