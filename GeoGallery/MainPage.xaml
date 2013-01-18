@@ -37,10 +37,16 @@
             
             
             <my:Map   HorizontalAlignment="Stretch" Margin="0,0,0,0" Name="googlemap"
-                   CredentialsProvider="AqayajnZU8FSfDGL8jpK5zMKAHmUL27Uqxv_OnpQzJQOI2PoQyxcG7dlR6_g4WWo" 
+                   
                    CopyrightVisibility="Collapsed" LogoVisibility="Collapsed" 
-       ScaleVisibility="Visible"  VerticalAlignment="Stretch" >
-
+                ScaleVisibility="Visible"  VerticalAlignment="Stretch" 
+                CredentialsProvider="AqayajnZU8FSfDGL8jpK5zMKAHmUL27Uqxv_OnpQzJQOI2PoQyxcG7dlR6_g4WWo" 
+                   
+                   MouseLeftButtonUp="googlemap_MouseLeftButtonUp" 
+                     
+                      
+                      >
+       
                 
             </my:Map>
             

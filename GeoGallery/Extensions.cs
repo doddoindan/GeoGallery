@@ -61,12 +61,14 @@ namespace GeoGallery
                 foreach (var itm in pl)
                 {
                     //BitmapSource bm = ;
-                    pld.Add(new PushpinData() { Name = itm.Tag.ToString(), GC = itm.Location, ImgSource = ImageConverter.ConvertToBytes((itm.Content as Image).Source as BitmapSource) });
+                    pld.Add(new PushpinData() { Name = itm.Tag.ToString(), GC = itm.Location/*, ImgSource = ImageConverter.ConvertToBytes((itm.Content as Image).Source as BitmapSource)*/ });
 
                 }
 
                 return pld;
             }
+
+        
 
             public static void SetPushPinData(this List<Pushpin> pl, List<PushpinData> pld)
             {

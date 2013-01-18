@@ -39,9 +39,13 @@ namespace GeoGallery
     // структура для сохранения и обработки привязки фото к геолокации
     public struct PushpinData
     {
+        
         public byte[] ImgSource; 
         public string Name; 
         public GeoCoordinate GC;
+        //public int Group;
+
+        
         //public ImageSource ImageSource;
 
         public Pushpin GetPushPin() {
@@ -51,7 +55,13 @@ namespace GeoGallery
             
             p.Location = this.GC;
             p.Tag = this.Name;
-            p.Content = new Image() { Source = ImageConverter.ConvertToImage(this.ImgSource), Width = 50, Height = 50 };            
+            p.Content = new Image() { Source = ImageConverter.ConvertToImage(this.ImgSource), Width = 50, Height = 50 };
+            p.MouseLeftButtonUp += (s, e) =>
+            {
+                Pushpin pp = (Pushpin)s;
+
+                MessageBox.Show(pp.Tag.ToString());
+            };           
             return p;
         }
 
@@ -59,8 +69,21 @@ namespace GeoGallery
         public PushpinData(ImageSource pImg, string pName, GeoCoordinate pGC) {
             Name = pName;
             GC   = pGC;
-            ImgSource = new byte[1]; //ImageConverter.ConvertToBytes(pImg as BitmapSource);
+            ImgSource = ImageConverter.ConvertToBytes(pImg as BitmapSource);
+            //Group = -1;
+            
             //ImageSource = pImg;
+        }
+
+        private Image GetImage(){
+
+            MediaLibrary ml = new MediaLibrary();
+            string name = this.Name;
+            Stream s = (from res in ml.Pictures where res.Name == name select res.GetImage()).First();
+
+            Image img = new Image() { Source = (ImageSource)PictureDecoder.DecodeJpeg(s, MainPage.PushWidth, MainPage.PushWidth) };
+            
+            return img;
         }
     }
     

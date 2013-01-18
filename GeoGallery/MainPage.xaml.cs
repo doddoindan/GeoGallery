@@ -22,22 +22,13 @@ using Microsoft.Phone.Info;
 using Microsoft.Xna.Framework.Media;
 using System.IO;
 using System.IO.IsolatedStorage;
-
 using ExifLib;
-//using Googlemap;
-
 using Microsoft.Phone.Controls.Maps;
 using System.Device.Location;
-
-
 using System.Runtime.Serialization;
 using System.Windows.Media.Imaging;
-
 using System.Threading;
 using System.ComponentModel;
-
-
-
 
 
 
@@ -50,15 +41,10 @@ namespace GeoGallery
     public partial class MainPage : PhoneApplicationPage
     {                  
         
-        // поток для обработки изображений
-     
-
-        
-        
-
+               
+       
         // Надо ли?
-        public static int PushWidth = 50;
-        public static int PushHeigh = 50;
+
         // изолирпованное хранилище
         readonly IsolatedStorageSettings _settings =
                 IsolatedStorageSettings.ApplicationSettings;
@@ -75,22 +61,19 @@ namespace GeoGallery
         public MainPage()
         {
             InitializeComponent();
-            /* gt = new GoogleTile();
-             googlemap.ZoomBarVisibility = System.Windows.Visibility.Visible;*/
-            /*
-            StartProcessCompleted += GetPins_StartProcessCompleted;
-            Loaded += (s, e) => { StartProcess(); };
-            */
+
             InitializeSettings();
-            //MessageBox.Show(PushpinDataList.Count().ToString());
-            Loaded += (s, e) => { StartProcess(Callback); };
+
+            Loaded += (s, e) => { StartProcessImage(CallbackImage); };
+            
+            
 
             PushpinList.SetPushPinData(PushpinDataList);
-            
-            /*foreach (var p in PushpinList)
-            {
-                googlemap.Children.Add(p);    
-            }*/
+
+
+            var clusterer = new PushpinClusterer(googlemap, PushpinList,
+        this.Resources["ClusterTemplate"] as DataTemplate);
+           
         }      
 
         private void InitializeSettings()
@@ -98,7 +81,7 @@ namespace GeoGallery
 
             if (_settings.Contains("PushPinsList"))
             {
-               // PushpinDataList = (List<PushpinData>)_settings["PushPinsList"];
+                PushpinDataList = (List<PushpinData>)_settings["PushPinsList"];
             }
             
         }
@@ -109,7 +92,8 @@ namespace GeoGallery
 
             _settings["PushPinsList"] = PushpinDataList;            
                 _settings.Save();
-                
+
+               
         }
 
 
@@ -123,45 +107,64 @@ namespace GeoGallery
             MediaLibrary ml = new MediaLibrary();
             
             // Делаем выборку
-            var lnq = from mz in ml.Pictures 
-                      
-                      where 
-                          (( mz.Date >= DateTime.Today.AddDays(-3) )  &&
+            
+            //try
 
-                            ((from pl in PushpinDataList where pl.Name == mz.Name select pl.Name).Count()==0 ))                          
-            select mz;
+            var plname = from pl in PushpinDataList select pl.Name;
+            string[] arr = plname.ToArray();
 
+            
+            {
+                var lnq = from mz in ml.Pictures
 
-            // данные для прогрессбара
-            double i = (100.0 / lnq.Count());
-            double p = 0;
-            int cnt = lnq.Count();
-            //*************************
-            foreach (Picture pic in lnq)
-            {               
-                p = p + i;// прогрессбар               
+                          where
+                              (/*( mz.Date >= DateTime.Today.AddDays(-3) )  &&*/
 
-                // вытягиваем экзиф 
-                JpegInfo info = ExifLib.ExifReader.ReadJpeg(pic.GetImage(), pic.Name);                
-                // если долгота и широта не ноль                
-                PushpinData pd = new PushpinData();                    
-                pd.Name = pic.Name;
-                pd.GC = new GeoCoordinate() { Longitude = info.GetLongitude(), Latitude = info.GetLatitude(), Altitude = 0 };
+                                ((from pl in arr where pl == mz.Name select pl).Count() == 0))
+                          select mz;
+        
 
+                // данные для прогрессбара
+                double i = (100.0 / lnq.Count());
+                double p = 0;
+                int cnt = 0;
+                //*************************
+                foreach (Picture pic in lnq)
+                {          
                 
-                if ((info.GetLatitude()) != 0 && (info.GetLongitude()) != 0)
-                {
-                    // передаём объект ПД и поток, чтобы преобразовать его в UI потоке
-                    b.ReportProgress((int)p, new object[] { pic.GetThumbnail(), pd, string.Format("{1}/{0}", cnt, lnq.Count()) });
-                }
-                else {
-                    b.ReportProgress((int)p, new object[] { null, null, string.Format("{1}/{0}", cnt, lnq.Count()) });
-                }
-                //PushpinDataList.Add(pd);
-                // добавляем
+                    p = p + i;// прогрессбар               
+                    cnt++;
+                    // вытягиваем экзиф 
+                    JpegInfo info = ExifLib.ExifReader.ReadJpeg(pic.GetImage(), pic.Name);                
+                    // если долгота и широта не ноль                                
+                    PushpinData pd = new PushpinData();                    
+                    pd.Name = pic.Name;
+                    pd.GC = new GeoCoordinate() { Longitude = info.GetLongitude(), Latitude = info.GetLatitude(), Altitude = 0 };
+
+                    string Caption = string.Format("{0}/{1}", cnt, lnq.Count());
+
+                    if ((info.GetLatitude()) != 0 && (info.GetLongitude()) != 0)
+                    {
+                        // передаём объект ПД и поток, чтобы преобразовать его в UI потоке
+                        b.ReportProgress((int)p, new object[] { pic.GetThumbnail(), pd, Caption });
+                    }
+                    else {
+                        b.ReportProgress((int)p, new object[] { null, pd, Caption });
+                    }
+                    //PushpinDataList.Add(pd);
+                    // добавляем репорт прогрессе
                 
+                }
+                
+                               
+                return 0;
             }
-            return 0;
+
+           
+            /*catch (Exception ex)
+            {
+                return -1;
+            }*/
         }
 
          
@@ -171,8 +174,16 @@ namespace GeoGallery
         {    
             Pushpin p = (Pushpin)Object;
             MessageBox.Show(p.Tag.ToString());                      
-            
+                    
         }
+
+     
+
+        
+
+    
+    
+     
 
 
 
